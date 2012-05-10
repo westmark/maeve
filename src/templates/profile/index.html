@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block bodycontent %}
+<header>
+  <div class="row">
+    <div class="span12">
+      <h1>Profile</h1>
+    </div>
+  </div>
+</header>
+<div class="row">
+  <div class="span6">
+    <h3>Choose character</h3>
+    <ul class="nav nav-list">
+      <li class="nav-header">
+        Active characters
+      </li>
+      {% if active_chars %}
+        {% for c, account_key in active_chars %}
+          <li>
+            <a href="/character/{{ c.char_id }}">
+              <i class="icon-user"></i>
+              {{ c.name }}
+          </a>
+          </li>
+        {% endfor %}
+      {% else %}
+        <li>No characters found</li>
+      {% endif %}
+      <li class="nav-header">
+        Inactive characters
+      </li>
+      {% if inactive_chars %}
+        {% for c, account_key in inactive_chars %}
+          <li>
+            <a href="/character/{{ c.char_id }}">
+              <i class="icon-user"></i>
+              {{ c.name }}
+          </a>
+          </li>
+        {% endfor %}
+      {% else %}
+        <li>No characters found</li>
+      {% endif %}
+      </ul>
+    </ul>
+  </div>
+  <div class="span6">
+    {%- if errors and True in errors.values() %}
+    <div class="alert alert-error">
+      Please correct the errors before submiting again.
+    </div>
+    {% endif -%}
+    {%- for e, _ in error_messages %}
+    <div class="alert alert-error">
+      {{ e }}
+    </div>
+    {% endfor -%}
+    {%- for m, _ in messages %}
+    <div class="alert alert-info">
+      {{ m }}
+    </div>
+    {% endfor -%}
+    <form action="/profile/api" method="POST" class="well">
+      <h3>Add new API key</h3>
+      <div class="control-group{% if errors and errors.api_id %} error{% endif %}">
+        <div class="controls">
+          <input type="text" class="input-small" placeholder="ID" name="api_id" value="{{ values and values.api_id or '' }}"/>
+        </div>
+      </div>
+      <div class="control-group{% if errors and errors.api_vcode %} error{% endif %}">
+        <div class="controls">
+          <input type="text" class="input-xlarge" placeholder="vCode" name="api_vcode" value="{{ values and values.api_vcode or '' }}"/>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <input type="text" class="optional" placeholder="API Key Name (optional)" name="name" value="{{ values and values.name or '' }}"/>
+        </div>
+      </div>
+      <button type="submit" class="btn">Save</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

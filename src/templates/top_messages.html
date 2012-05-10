@@ -1,0 +1,9 @@
+{% for message, level in top_messages %}
+<div class="row">
+  <div class="span12">
+    <div class="alert alert-{{level}}">
+      {{ message }}
+    </div>
+  </div>
+</div>
+{% endfor %}

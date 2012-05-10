@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block bodycontent %}
+<header>
+  <div class="row">
+    <div class="span12">
+      <img src="http://image.eveonline.com/character/{{ character.char_id }}_64.jpg"class="portrait"/>
+      <h1 class="image-heading">{{ character.name }}</h1>
+    </div>
+  </div>
+</header>
+{% include 'top_messages.html' %}
+<div class="row">
+  {% if not character.active %}
+  <div class="span12">
+    <div class="well">
+      <p>
+        This character is not active. Activate it now?
+      </p>
+      <form action="/character/{{ character.char_id }}/activate" method="POST">
+        <button type="submit" class="btn btn-primary">Yes, activate now!</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

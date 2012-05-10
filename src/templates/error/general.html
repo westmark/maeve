@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block scriptbody %}
+  {{ super() }}
+{% endblock %}
+
+{% block bodycontent %}
+<div class="row">
+  <div class="span12"><h1 class="error">BOOM!</h1></div>
+</div>
+<div class="row">
+  <div class="span12">
+    <p>Something bad happened</p>
+  </div>
+</div>
+<div class="row">
+  <div class="span12 error-debug-info">
+    <h2>Stacktrace</h2>
+    {% if stacktrace %}
+    <pre>
+    {{ stacktrace }}
+    </pre>
+    {% else %}
+    <p>No stacktrace found</p>
+    {% endif %}
+  </div>
+</div>
+<div class="row">
+  <div class="span12 error-debug-info">
+    <h2>Request information</h2>
+    {% if req %}
+    <dl>
+      <dt>URI</dt>
+      <dd>{{ req.url }}</dd>
+      <dt>Method</dt>
+      <dd>{{ req.method }}</dd>
+      <dt>Request body size</dt>
+      <dd>{{ req.body|length }}</dd>
+      <dt>Arguments</dt>
+      {% for param in req.arguments() %}
+      <dd>{{ param }}: '{{ req.get(param) }}'</dd>
+      {% endfor %}
+      <dt>Headers</dt>
+      <dd>{{ req.headers }}</dd>
+      <dt>Cookies</dt>
+      <dd>{{ req.cookies }}</dd>
+    </dl>
+    {% else %}
+    <p>No data found</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

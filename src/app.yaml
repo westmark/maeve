@@ -1,0 +1,51 @@
+application: maeve
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+libraries:
+- name: jinja2
+  version: latest
+- name: markupsafe
+  version: latest
+
+derived_file_type:
+- python_precompiled
+
+handlers:
+#Static files
+- url: /static
+  static_dir: static
+  secure: always
+
+#Profile
+- url: /profile.*
+  script: maeve.profile_view.app
+  login: required
+
+#Character
+- url: /character.*
+  script: maeve.character_view.app
+  login: required
+
+#Catchall
+- url: /.*
+  script: maeve.root.app
+
+skip_files:
+- ^(.*/)?app\.yaml
+- ^(.*/)?app\.yml
+- ^(.*/)?index\.yaml
+- ^(.*/)?index\.yml
+- ^(.*/)?#.*#
+- ^(.*/)?.*~
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*\.pot?
+- ^(.*/)?.*\.gitignore
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?unittest/.*
+- ^(.*/)?\..*
+- ^(.*/)?README$
+- ^(.*/)?LICENSE$
+- ^seeed.*
