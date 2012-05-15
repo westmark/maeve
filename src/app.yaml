@@ -29,6 +29,11 @@ handlers:
   script: maeve.character_view.app
   login: required
 
+#Task
+- url: /_task.*
+  script: maeve.task_view.app
+  login: admin
+
 #Catchall
 - url: /.*
   script: maeve.root.app

@@ -4,8 +4,8 @@ from maeve.web import BaseHandler, profile_required
 from maeve.settings import webapp2_config
 from maeve.utils import is_prod_environment
 from maeve.models import Account, Character
-from maeve.api import get_auth, get_characters
-from google.appengine.ext.ndb import toplevel
+from maeve.api import Api
+from google.appengine.ext.ndb import toplevel, put_multi_async
 from google.appengine.api import users
 import webapp2
 
@@ -21,14 +21,12 @@ class ProfileHandler(BaseHandler):
         env.update(e)
 
     active_chars, inactive_chars = [], []
-    char_map = self.userprofile.char_map
 
-    for account in Account.by_user():
-      for char_id in account.available_char_ids:
-        if char_id in account.active_char_ids:
-          active_chars.append((char_map.get(char_id), account.key.urlsafe()))
-        else:
-          inactive_chars.append((char_map.get(char_id), account.key.urlsafe()))
+    for char in Character.by_user():
+      if char.active:
+        active_chars.append(char)
+      else:
+        inactive_chars.append(char)
 
     env.update(dict(active_chars=active_chars,
                     inactive_chars=inactive_chars))
@@ -54,30 +52,32 @@ class ApiHandler(BaseHandler):
       if Account.query().filter(Account.api_id == api_id).count():
         self.session.add_flash('This API key has already been added to this profile', key='error_messages')
       else:
-        auth = get_auth(api_id, api_vcode)
-        if auth:
-          api_characters = get_characters(auth)
+        api = Api(api_id, api_vcode)
+        api.authenticate()
+
+        if api.is_authenticated():
           accounts_chars = []
 
-          for api_char in api_characters:
+          for api_char in api.characters:
             if not filter(lambda c: api_char.charactedID == c.char_id, self.userprofile.characters):
-              accounts_chars.append(Character(name=api_char.name,
+              accounts_chars.append(Character(user=users.get_current_user(),
+                                              name=api_char.name,
                                               char_id=str(api_char.characterID)))
 
           account = Account(
                             user=users.get_current_user(),
                             api_vcode=api_vcode,
                             api_id=api_id,
-                            key_name=self.request.POST.get('name', None),
-                            available_char_ids=[c.char_id for c in accounts_chars],
+                            key_name=self.request.POST.get('name', None)
                             )
           account.put()
 
           for char in accounts_chars:
             char.account_key = account.key
 
-          self.userprofile.characters = (self.userprofile.characters or []) + accounts_chars
-          self.userprofile.put_async()
+          put_multi_async(accounts_chars)
+          #self.userprofile.characters = (self.userprofile.characters or []) + accounts_chars
+          #self.userprofile.put_async()
 
           self.session.add_flash('Key added successfully', key='messages')
 

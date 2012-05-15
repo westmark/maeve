@@ -3,22 +3,45 @@
 import eveapi
 import time
 
-
-def get_auth(api_id, api_vcode):
-  api = eveapi.EVEAPIConnection()
-  return api.auth(keyID=api_id, vCode=api_vcode)
-
-
-def get_characters(auth):
-  return auth.account.Characters().characters
+try:
+  from webapp2 import cached_property as c_property
+except:
+  c_property = property
 
 
-def get_character(auth, char_id):
-  return auth.character(char_id)
+class Api(object):
+
+  def __init__(self, api_id, api_vcode):
+    self.api_id = api_id
+    self.api_vcode = api_vcode
+    self.current_char_id = None
+
+  def authenticate(self):
+    eve_api = eveapi.EVEAPIConnection()
+    self.auth = eve_api.auth(keyID=self.api_id, vCode=self.api_vcode)
+    return self
+
+  def is_authenticated(self):
+    return bool(self.auth)
+
+  @c_property
+  def characters(self):
+    return self.auth.account.Characters().characters
+
+  def get_character(self, char_id):
+    return self.auth.character(char_id)
+
+  def set_char(self, char_id):
+    self.current_char_id = char_id
+
+  def clear_char(self):
+    self.current_char_id = None
 
 
-def get_reftype_by_name(auth, reftype_name):
-  rt = auth.eve.RefTypes().refTypes
+
+def get_reftype_by_name(reftype_name):
+  eve_api = eveapi.EVEAPIConnection()
+  rt = eve_api.eve.RefTypes().refTypes
   rtn = rt.IndexedBy('refTypeName')
   try:
     t = rtn.Get(reftype_name)
