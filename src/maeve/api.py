@@ -11,6 +11,10 @@ except:
 
 class Api(object):
 
+  WALLET_TRANSACTIONS_MASK = 4194304
+  MARKET_ORDERS_MASK = 4096
+  MAIL_MASK = 2048
+
   def __init__(self, api_id, api_vcode):
     self.api_id = api_id
     self.api_vcode = api_vcode
@@ -37,6 +41,13 @@ class Api(object):
   def clear_char(self):
     self.current_char_id = None
 
+  @c_property
+  def access_mask(self):
+    return self.auth.account.APIKeyInfo().key.accessMask
+
+  def can_access(self, *masks):
+    mask = reduce(lambda a, b: a | b, masks, 0)
+    return self.access_mask & mask == mask
 
 
 def get_reftype_by_name(reftype_name):

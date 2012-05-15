@@ -1,11 +1,18 @@
 {% extends 'base.html' %}
 
+{% block csshead %}
+<link href="/static/css/character.css" rel="stylesheet">
+{% endblock %}
+
 {% block bodycontent %}
 <header>
   <div class="row">
     <div class="span12">
       <img src="http://image.eveonline.com/character/{{ character.char_id }}_64.jpg"class="portrait"/>
-      <h1 class="image-heading">{{ character.name }}</h1>
+      <div class="header-subcontainer">
+        <h1>{{ character.name }}</h1>
+        <span>Last updated: {{ character.last_update }}</span>
+      </div>
     </div>
   </div>
 </header>
@@ -24,4 +31,13 @@
   </div>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block endbody %}
+{% if debug %}
+<script src="/static/js/lib/d3.v2.min.js"></script>
+{% else %}
+<script src="http://d3js.org/d3.v2.js"></script>
+{% endif %}
+<script src="/static/js/character.js"></script>
 {% endblock %}
