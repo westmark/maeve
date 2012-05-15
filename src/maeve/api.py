@@ -20,6 +20,8 @@ class Api(object):
     self.api_vcode = api_vcode
     self.current_char_id = None
 
+    self.access_mask = None
+
   def authenticate(self):
     eve_api = eveapi.EVEAPIConnection()
     self.auth = eve_api.auth(keyID=self.api_id, vCode=self.api_vcode)
@@ -41,11 +43,9 @@ class Api(object):
   def clear_char(self):
     self.current_char_id = None
 
-  @c_property
-  def access_mask(self):
-    return self.auth.account.APIKeyInfo().key.accessMask
-
   def can_access(self, *masks):
+    if not self.access_mask:
+      self.access_mask = self.auth.account.APIKeyInfo().key.accessMask
     mask = reduce(lambda a, b: a | b, masks, 0)
     return self.access_mask & mask == mask
 
