@@ -29,3 +29,4 @@ pip-log.txt
 /maeve.sublime-project
 *.sublime-workspace
 /src/.ropeproject
+/src/main.py

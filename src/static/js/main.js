@@ -1,10 +1,11 @@
 var mv = {
+  data: {},
   modules: []
 };
 
 
 !function($) {
-  mv.main = !function() {
+  mv.main = (function() {
     return new function() {
 
       var self        = this;
@@ -15,5 +16,10 @@ var mv = {
         })
       }
     }
-  }();
+  })();
+
+  $(document).ready(function() {
+    mv.main.init();
+  });
+
 }(jQuery);

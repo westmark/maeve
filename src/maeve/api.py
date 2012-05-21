@@ -20,7 +20,7 @@ class Api(object):
     self.api_vcode = api_vcode
     self.current_char_id = None
 
-    self.access_mask = None
+    self._access_mask = None
 
   def authenticate(self):
     eve_api = eveapi.EVEAPIConnection()
@@ -43,9 +43,13 @@ class Api(object):
   def clear_char(self):
     self.current_char_id = None
 
+  @property
+  def access_mask(self):
+    if not self._access_mask:
+      self._access_mask = self.auth.account.APIKeyInfo().key.accessMask
+    return self._access_mask
+
   def can_access(self, *masks):
-    if not self.access_mask:
-      self.access_mask = self.auth.account.APIKeyInfo().key.accessMask
     mask = reduce(lambda a, b: a | b, masks, 0)
     return self.access_mask & mask == mask
 
@@ -59,24 +63,3 @@ def get_reftype_by_name(reftype_name):
     return t.refTypeID
   except:
     return None
-
-
-def get_buy_transactions_for(auth, char, commdity_name):
-  wallet = char.WalletTransactions()
-  #print dir(wallet.transactions.GroupedBy('transactionType'))
-  #print wallet.transactions.GroupedBy('transactionType')._cols
-  #print wallet.transactions.GroupedBy('transactionType').keys()
-
-  sold_tx = wallet.transactions.GroupedBy('transactionType')['buy']
-  for row in sold_tx:#.GroupedBy('typeName'):
-    print row.typeName
-
-  return
-  entries_by_type = wallet.transactions.GroupedBy('transactionType')
-  market_transactions = entries_by_type[get_reftype_by_name(auth, 'Market Transaction')]
-  for t_date in market_transactions.Select('date'):
-    print time.asctime(time.gmtime(t_date))
-
-
-def get_sell_orders(char_id, auth):
-  pass

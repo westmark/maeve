@@ -6,7 +6,7 @@ from webapp2_extras import jinja2, sessions, sessions_ndb
 from google.appengine.api import users
 from maeve.models import Profile
 import logging
-import simplejson as json
+import json
 
 JINJA2_KEY = 'maeve.jinja2.instance.1'
 
@@ -48,11 +48,13 @@ class BaseHandler(RequestHandler):
   def render_response(self, _template, context={}):
     self.response.write(self.render_template(_template, context))
 
-  def render_json(self, json_data=None, encoder=None, redirect=None):
+  def render_json(self, json_data=None, encoder=None, redirect=None, cls=None):
     self.response.headers['Content-Type'] = 'application/json'
     if json_data:
       if encoder:
         self.response.out.write(json.dumps(json_data, default=encoder))
+      elif cls:
+        self.response.out.write(json.dumps(json_data, cls=cls))
       else:
         self.response.out.write(json.dumps(json_data))
 
@@ -92,7 +94,7 @@ class BaseHandler(RequestHandler):
     finally:
       self.session_store.save_sessions(self.response)
 
-      if 'msie' in self.request.headers['User-Agent'].lower():
+      if 'User-Agent' in self.request.headers and 'msie' in self.request.headers['User-Agent'].lower():
         self.response.headers['X-UA-Compatible'] = 'IE=edge,chrome=1'
 
 

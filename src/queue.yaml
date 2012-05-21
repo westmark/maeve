@@ -1,0 +1,8 @@
+
+queue:
+- name: transaction-sync
+  rate: 5/s
+
+- name: index-update
+  rate: 1/s
+  max_concurrent_requests: 1

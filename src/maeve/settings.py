@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 import os
-from maeve.utils import is_prod_environment, date_fmt
+from maeve.utils import is_prod_environment, date_fmt, datetime_fmt
 
 webapp2_config = {
   'webapp2_extras.jinja2': {
@@ -10,6 +10,7 @@ webapp2_config = {
     'template_path': os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates')),
     'filters': {
       'date_fmt': date_fmt,
+      'datetime_fmt': datetime_fmt
     },
   },
   'webapp2_extras.sessions': {

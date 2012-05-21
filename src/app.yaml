@@ -29,6 +29,16 @@ handlers:
   script: maeve.character_view.app
   login: required
 
+#Statistics
+- url: /stat.*
+  script: maeve.statistics_view.app
+  login: required
+
+#Cron
+- url: /_cron.*
+  script: maeve.task_view.app
+  login: admin
+
 #Task
 - url: /_task.*
   script: maeve.task_view.app

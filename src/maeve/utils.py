@@ -6,6 +6,7 @@ from google.appengine.ext.ndb import model
 import os
 import re
 import time
+import json
 
 monday_calendar = Calendar(0)
 
@@ -17,6 +18,16 @@ def slugify(inStr):
   aslug = re.sub('[^\w\s-]', '', aslug).strip().lower()
   aslug = re.sub('\s+', '-', aslug)
   return aslug
+
+
+class GenericModelEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, model.Key):
+      return obj.urlsafe()
+    elif isinstance(obj, datetime):
+      return {'str': obj.strftime('%Y-%m-%d %H:%M:%S'),
+              'timestamp': int(time.mktime(obj.timetuple()))}
+    return json.JSONEncoder.default(self, obj)
 
 
 def is_prod_environment():
@@ -43,7 +54,21 @@ def to_jstime(dt):
   return None
 
 
+def price_fmt(price):
+  s = '%d' % int(price)
+  dec = ',%.2d' % int((price - int(price)) * 100)
+  groups = []
+  while s and s[-1].isdigit():
+      groups.append(s[-3:])
+      s = s[:-3]
+  return s + ' '.join(reversed(groups)) + dec
+
+
 def date_fmt(d, fmt='%Y-%m-%d'):
+  return d.strftime(fmt)
+
+
+def datetime_fmt(d, fmt='%Y-%m-%d %H:%M:%S'):
   return d.strftime(fmt)
 
 

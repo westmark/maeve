@@ -12,6 +12,7 @@ class Character(model.Model):
   account_key = model.KeyProperty(kind='Account')
   #last_transaction_key = model.KeyProperty(kind='WalletTransaction')
   last_transaction_id = model.IntegerProperty()
+  last_transaction_date = model.DateTimeProperty()
   last_update = model.DateTimeProperty()
   active = model.BooleanProperty(default=False)
 
@@ -96,13 +97,40 @@ class WalletTransaction(model.Model):
   transaction_id = model.IntegerProperty('ti', required=True)
   transaction_date = model.DateTimeProperty('td', required=True)
   quantity = model.IntegerProperty('q', required=True, indexed=False)
-  type_name = model.StringProperty('tn', required=True)
+  type_name = model.StringProperty('tn', required=True, indexed=False)
   type_id = model.StringProperty('tyi', required=True)
   unit_price = model.FloatProperty('up', required=True, indexed=False)
   client_id = model.StringProperty('cli', required=True, indexed=False)
   client_name = model.StringProperty('cln', required=True, indexed=False)
   transaction_type = model.IntegerProperty('tt', required=True, choices=[BUY, SELL])
   journal_transaction_id = model.StringProperty('jti', indexed=False)
+
+
+class MarketOrder(model.Model):
+
+  BUY = 1
+  SELL = 2
+
+  OPEN = 0
+  CLOSED = 1
+  EXPIRED = 2
+  CANCELLED = 3
+  PENDING = 4
+
+  hash_key = model.IntegerProperty('hk', required=True)
+  character_key = model.KeyProperty('ck', kind='Character', required=True)
+  char_id = model.StringProperty('cid', required=True)
+  original_quantity = model.IntegerProperty('oq', required=True, indexed=False)
+  remaining_quantity = model.IntegerProperty('rq', required=True, indexed=False)
+  station_id = model.StringProperty('si', required=True, indexed=False)
+  type_id = model.StringProperty('tyi', required=True)
+  unit_price = model.FloatProperty('up', required=True)
+  order_type = model.IntegerProperty('ot', required=True, choices=[BUY, SELL])
+  order_state = model.IntegerProperty('os', required=True)
+  issued = model.DateTimeProperty('is', required=True)
+
+  def update_hash(self):
+    self.hash_key = hash(self.char_id, self.original_quantity, self.station_id, self.type_id, self.issued)
 
 
 class ItemTypeIndex(model.Model):

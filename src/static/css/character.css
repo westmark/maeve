@@ -18,3 +18,19 @@
   float:                  left;
   margin:                 0 20px 10px 0;
 }
+
+.table-transactions {
+
+}
+
+.table-transactions > tbody > tr.type1 {
+  background-color:       #FFA8A8;
+}
+
+.table-transactions > tbody > tr.type2 {
+  background-color:       #B2FFBB;
+}
+
+.table-transactions > tbody > tr > td.currency {
+  text-align:             right;
+}
