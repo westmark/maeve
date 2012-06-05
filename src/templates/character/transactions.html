@@ -1,0 +1,74 @@
+{% extends 'character/base.html' %}
+
+{% block rightcontent %}
+  <div class="tabbable">
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#all" data-toggle="tab">All transactions</a></li>
+      <li><a href="#calculator" data-toggle="tab">Calculator</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="all">
+        <h2>Latest sell transactions</h2>
+        <div class="sell-transactions transactions"></div>
+        <h2>Latest buy transactions</h2>
+        <div class="buy-transactions transactions"></div>
+      </div>
+      <div class="tab-pane" id="calculator">
+        <div class="well" id="average-container">
+          <h2>History average</h2>
+          <form id="form-average" class="form-inline" action="/stat/transactions/average" method="GET">
+            <input name="commodity_name" type="text" class="span4" placeholder="Commodity name" />
+            <input name="quantity" type="text" class="input-small" placeholder="Max quantity" />
+            <select name="transaction_type" class="input-small">
+              <option value="{{ WalletTransaction.BUY }}">Buy</option>
+              <option value="{{ WalletTransaction.SELL }}">Sell</option>
+            </select>
+            <button type="submit" class="btn">Go nuts!</button>
+          </form>
+          <div class="progress-container">
+          <div class="progress progress-striped active" style="display: none">
+            <div class="bar" style="width: 100%"></div>
+          </div>
+          </div>
+          <div class="content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block subendbody %}
+<script type="text/javascript" src="/static/js/lib/bootstrap-typeahead.js"></script>
+<script type="text/javascript">
+  mv.character.initTransactions();
+</script>
+{% endblock %}
+
+{% block templates %}
+  {% raw %}
+  mv.templates.transactionTable = ' \
+      <table class="table table-transactions table-bordered table-condensed"> \
+      <thead> \
+        <tr> \
+          <th>Commodity</th> \
+          <th>Date</th> \
+          <th>Quantity</th> \
+          <th>Unit Price</th> \
+          <th>Balance Change</th> \
+        </tr> \
+      </thead> \
+      <tbody> \
+      {{#transactions}} \
+      <tr class="type{{ transaction_type }}"> \
+        <td>{{ type_name }}</td> \
+        <td>{{ transaction_date.str }}</td> \
+        <td>{{ quantity }}</td> \
+        <td class="currency">{{ unit_price_str }}</td> \
+        <td class="currency">{{ balance_change_str }}</td> \
+      </tr> \
+      {{/transactions}} \
+      </tbody> \
+      </table>';
+  {% endraw %}
+{% endblock %}

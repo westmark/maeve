@@ -34,3 +34,9 @@
 .table-transactions > tbody > tr > td.currency {
   text-align:             right;
 }
+
+.progress-container {
+  width:                  50%;
+  position:               relative;
+  left:                   25%;
+}

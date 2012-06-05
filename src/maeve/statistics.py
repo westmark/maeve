@@ -1,16 +1,24 @@
 # -*- coding: UTF-8 -*-
 
-from maeve.web import BaseHandler, profile_required
-from maeve.settings import webapp2_config
-from maeve.utils import is_prod_environment
 from maeve.models import Character, WalletTransaction
-from google.appengine.ext.ndb import toplevel
-from google.appengine.api import users
+from maeve.utils import price_fmt
 from datetime import datetime
+import logging
+
+
+def extend_transactions_query_result(result):
+  results_as_dct = [r.to_dict() for r in result]
+  for dct in results_as_dct:
+    dct['balance_change'] = dct['unit_price'] * dct['quantity']
+    if dct['transaction_type'] == WalletTransaction.BUY:
+      dct['balance_change'] *= -1
+
+    dct['balance_change_str'] = price_fmt(dct['balance_change'])
+    dct['unit_price_str'] = price_fmt(dct['unit_price'])
 
 
 def get_filtered_transactions(character, filters):
-  transaction_type = filters.get('type', None)
+  transaction_type = filters.get('transaction_type', None)
   if 'limit' in filters:
     limit = filters['limit']
   else:
@@ -22,6 +30,12 @@ def get_filtered_transactions(character, filters):
   query = WalletTransaction.query(WalletTransaction.character_key == character.key)
 
   if transaction_type:
+    if type(transaction_type) in (str, unicode):
+      if transaction_type.lower() == 'sell':
+        transaction_type = WalletTransaction.SELL
+      elif transaction_type.lower() == 'buy':
+        transaction_type = WalletTransaction.BUY
+
     query = query.filter(WalletTransaction.transaction_type == int(transaction_type))
 
   if 'type_id' in filters:

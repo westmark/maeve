@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 from maeve.api import Api
-from maeve.models import Character, Account, WalletTransaction, MarketOrder, ItemTypeIndex
+from maeve.models import Character, Account, WalletTransaction, MarketOrder, ItemTypeIndex, ItemStats
 from google.appengine.ext import ndb
 from datetime import datetime
 from google.appengine.api import taskqueue
@@ -49,58 +49,75 @@ def index_all_characters():
     task_count += 1
     taskqueue.add(url='/_task/sync',
                   params={'char': character.key.urlsafe()},
-                  queue_name='transaction-sync')
+                  queue_name='transaction-sync',
+                  )
 
   logging.info('{0} sync tasks enqueued'.format(task_count))
 
 
 def index_character(character, account):
 
-  logging.info('Synching: Character {0} / {1}'.format(character.name, character.char_id))
-  orders = MarketOrder.query(MarketOrder.character_key == character.key).fetch_async()
+  try:
+    logging.info('Synching: Character {0} / {1}'.format(character.name, character.char_id))
+    item_stats = ItemStats.query(ItemStats.character_key == character.key).fetch_async()
+    orders = MarketOrder.query(MarketOrder.character_key == character.key).fetch_async()
 
-  api = Api(account.api_id, account.api_vcode)
-  api.authenticate()
-  api_char = api.get_character(character.char_id)
+    api = Api(account.api_id, account.api_vcode)
+    api.authenticate()
+    api_char = api.get_character(character.char_id)
 
-  row_count = 250
-  all_items = {}
+    row_count = 250
+    all_items = {}
 
-  character.last_update = datetime.now()
+    character.last_update = datetime.now()
 
-  last_transaction_id = character.last_transaction_id
-  last_transaction_date = character.last_transaction_date
+    last_transaction_id = character.last_transaction_id
+    last_transaction_date = character.last_transaction_date
 
-  api_wallet_transactions = api_char.WalletTransactions(rowCount=(last_transaction_id is None and 1000 or row_count))
-  newest_transaction, oldest_transaction, items = sync_transactions(character,
-                                                             api_wallet_transactions,
-                                                             last_transaction_id,
-                                                             last_transaction_date)
+    api_wallet_transactions = api_char.WalletTransactions(rowCount=(last_transaction_id is None and 1000 or row_count))
+    item_stats = dict([(i.type_id, i) for i in item_stats.get_result()])
 
-  all_items.update(items or {})
-
-  while last_transaction_id and last_transaction_date and oldest_transaction and \
-  (datetime.fromtimestamp(oldest_transaction.transactionDateTime) > last_transaction_date or oldest_transaction.transactionID > last_transaction_id):
-    logging.info('Fetching another batch from id {0}'.format(oldest_transaction.transactionID))
-
-    api_wallet_transactions = api_char.WalletTransactions(rowCount=row_count, fromID=oldest_transaction.transactionID)
     newest_transaction, oldest_transaction, items = sync_transactions(character,
                                                                api_wallet_transactions,
                                                                last_transaction_id,
-                                                               last_transaction_date)
+                                                               last_transaction_date,
+                                                               item_stats)
 
     all_items.update(items or {})
 
-  sync_orders(character,
-              api_char.MarketOrders(),
-              orders.get_result())
+    while last_transaction_id and last_transaction_date and oldest_transaction and \
+    (datetime.fromtimestamp(oldest_transaction.transactionDateTime) > last_transaction_date or oldest_transaction.transactionID > last_transaction_id):
+      logging.info('Fetching another batch from id {0}'.format(oldest_transaction.transactionID))
 
-  character.put_async()
-  logging.info('Syncing done: Character {0} / {1}'.format(character.name, character.char_id))
-  return all_items
+      api_wallet_transactions = api_char.WalletTransactions(rowCount=row_count, fromID=oldest_transaction.transactionID)
+      newest_transaction, oldest_transaction, items = sync_transactions(character,
+                                                                 api_wallet_transactions,
+                                                                 last_transaction_id,
+                                                                 last_transaction_date,
+                                                                 item_stats)
+
+      all_items.update(items or {})
+
+    sync_orders(character,
+                api_char.MarketOrders(),
+                orders.get_result())
+
+    character.put_async()
+    logging.info('Syncing done: Character {0} / {1}'.format(character.name, character.char_id))
+    return all_items
+  except:
+    import traceback
+    logging.error('Error while syncing character {0} / {1}'.format(character.name, character.char_id))
+    logging.error(traceback.format_exc())
+    return None
 
 
-def sync_transactions(character, api_wallet_transactions, last_transaction_id, last_transaction_date):
+def sync_transactions(character,
+                      api_wallet_transactions,
+                      last_transaction_id,
+                      last_transaction_date,
+                      item_stats):
+
   newest_transaction, oldest_transaction, items = None, None, {}
   to_put = []
 
@@ -123,6 +140,29 @@ def sync_transactions(character, api_wallet_transactions, last_transaction_id, l
 
       to_put.append(wt)
       items[wt.type_id] = wt.type_name
+
+      stats = item_stats.get(wt.type_id, None)
+      abs_balance_change = wt.quantity * wt.unit_price
+
+      if not stats:
+        stats = ItemStats(user=character.user,
+                          char_id=character.char_id,
+                          character_key=character.key,
+                          type_id=wt.type_id,
+                          accumulated_cost=(wt.transaction_type == WalletTransaction.BUY and abs_balance_change or 0),
+                          accumulated_earnings=(wt.transaction_type == WalletTransaction.SELL and abs_balance_change or 0),
+                          items_bought=(wt.transaction_type == WalletTransaction.BUY and wt.quantity or 0),
+                          items_sold=(wt.transaction_type == WalletTransaction.SELL and wt.quantity or 0),
+                          )
+        item_stats[wt.type_id] = stats
+      else:
+        if wt.transaction_type == WalletTransaction.BUY:
+          stats.accumulated_cost += abs_balance_change
+          stats.items_bought += wt.quantity
+        else:
+          stats.accumulated_earnings += abs_balance_change
+          stats.items_sold += wt.quantity
+
     else:
       logging.debug('Skipped transaction {0}'.format(row.transactionID))
 
@@ -137,6 +177,14 @@ def sync_transactions(character, api_wallet_transactions, last_transaction_id, l
     character.last_transaction_date = character.last_transaction_date and max(character.last_transaction_date, row_date) or row_date
 
   ndb.put_multi_async(to_put)
+
+  for stats in item_stats.values():
+    stats.roi_yield = stats.accumulated_cost > 0 and (stats.accumulated_earnings - stats.accumulated_cost) / stats.accumulated_cost or 0
+    avg_unit_cost = stats.items_bought > 0 and stats.accumulated_cost / stats.items_bought or 0
+    avg_unit_earnings = stats.items_sold > 0 and stats.accumulated_earnings / stats.items_sold or 0
+    stats.avg_roi_yield = avg_unit_cost > 0 and (avg_unit_earnings - avg_unit_cost) / avg_unit_cost or 0
+
+  ndb.put_multi_async(item_stats.values())
 
   return newest_transaction, oldest_transaction, items
 

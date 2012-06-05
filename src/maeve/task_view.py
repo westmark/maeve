@@ -31,9 +31,10 @@ class SyncTaskHandler(BaseHandler):
     if character and character.active:
       account = character.account_key.get()
       items = index_character(character, account)
-      taskqueue.add(url='/_task/index',
-                    params={'values': json.dumps(items)},
-                    queue_name='index-update')
+      if items:
+        taskqueue.add(url='/_task/index',
+                      params={'values': json.dumps(items)},
+                      queue_name='index-update')
 
 
 class IndexTaskHandler(BaseHandler):

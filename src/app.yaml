@@ -9,6 +9,8 @@ libraries:
   version: latest
 - name: markupsafe
   version: latest
+- name: numpy
+  version: latest
 
 derived_file_type:
 - python_precompiled

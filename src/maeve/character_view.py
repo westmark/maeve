@@ -3,7 +3,7 @@
 from maeve.web import BaseHandler, profile_required
 from maeve.settings import webapp2_config
 from maeve.utils import is_prod_environment
-from maeve.models import Account, Character
+from maeve.models import Account, Character, WalletTransaction
 from google.appengine.ext.ndb import toplevel
 from google.appengine.api import users
 import webapp2
@@ -18,7 +18,8 @@ class CharacterHandler(BaseHandler):
 
     if char:
       env.update(dict(character=char,
-                      account=char.account))
+                      account=char.account,
+                      current='dashboard'))
 
       if char.active:
         pass
@@ -47,9 +48,30 @@ class CharacterActivationHandler(BaseHandler):
       self.session.add_flash('No character with that id found', key='top_messages', level='warning')
       self.redirect('/profile')
 
+
+class CharacterTransactionsHandler(BaseHandler):
+
+  def get(self, char_id):
+    env = {}
+    char = Character.by_char_id(char_id)
+    if char:
+      env.update(dict(character=char,
+                      account=char.account,
+                      current='transactions',
+                      WalletTransaction=WalletTransaction))
+
+      if char.active:
+        pass
+
+      self.render_response('character/transactions.html', env)
+    else:
+      self.session.add_flash('No character with that id found', key='top_messages')
+      self.redirect('/profile')
+
 app = webapp2.WSGIApplication([
                                 (r'/character/(\d+)/?$', CharacterHandler),
                                 (r'/character/(\d+)/(activate)/?$', CharacterActivationHandler),
+                                (r'/character/(\d+)/transactions/?$', CharacterTransactionsHandler),
                               ],
                               debug=(not is_prod_environment()),
                               config=webapp2_config

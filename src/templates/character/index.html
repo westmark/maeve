@@ -1,57 +1,19 @@
-{% extends 'base.html' %}
+{% extends 'character/base.html' %}
 
-{% block csshead %}
-<link href="/static/css/character.css" rel="stylesheet">
+{% block rightcontent %}
+  <h2>Latest transactions</h2>
+  <div class="content"></div>
+</div>
 {% endblock %}
 
-{% block bodycontent %}
-<header>
-  <div class="row">
-    <div class="span12">
-      <img src="http://image.eveonline.com/character/{{ character.char_id }}_64.jpg"class="portrait"/>
-      <div class="header-subcontainer">
-        <h1>{{ character.name }}</h1>
-        <span>Last updated: {% if character.last_update %}{{ character.last_update|datetime_fmt }}{% else %} Never {% endif %}</span>
-      </div>
-    </div>
-  </div>
-</header>
-{% include 'top_messages.html' %}
-<div class="row">
-  {% if not character.active %}
-  <div class="span12">
-    <div class="well">
-      <p>
-        This character is not active. Activate it now?
-      </p>
-      <form action="/character/{{ character.char_id }}/activate" method="POST">
-        <button type="submit" class="btn btn-primary">Yes, activate now!</button>
-      </form>
-    </div>
-  </div>
-  {% endif %}
-</div>
-
-{% if character.active %}
-<div class="row">
-  <div id="transactions" class="span8">
-  </div>
-  <div class="span4">
-  </div>
-</div>
-{% endif %}
+{% block subendbody %}
+  <script>
+    mv.character.initDashboard();
+  </script>
 {% endblock %}
 
-{% block endbody %}
-<script type="text/javascript">
-
-  mv.data.character = {
-    name: '{{ character.name|e }}',
-    id: '{{ character.char_id }}'
-  }
-
+{% block templates %}
   {% raw %}
-  mv.templates = {}
   mv.templates.transactionTable = ' \
       <table class="table table-transactions table-bordered table-condensed"> \
       <thead> \
@@ -76,12 +38,4 @@
       </tbody> \
       </table>';
   {% endraw %}
-</script>
-{% if debug %}
-<script src="/static/js/lib/d3.v2.min.js"></script>
-{% else %}
-<script src="http://d3js.org/d3.v2.js"></script>
-{% endif %}
-<script src="/static/js/lib/mustache.jquery.js"></script>
-<script src="/static/js/character.js"></script>
 {% endblock %}

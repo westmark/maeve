@@ -140,4 +140,24 @@ class ItemTypeIndex(model.Model):
   @classmethod
   def get(cls, item_id):
     idx = ItemTypeIndex.query().get()
-    return idx.items or {}
+    return (idx.items or {}).get(item_id, None)
+
+  def find(cls, name_part):
+    import re
+    name_re = re.compile('^.*?{0}.*$'.format(name_part.lower()), flags=re.IGNORECASE)
+    idx = ItemTypeIndex.query().get()
+    matches = ([(i, n) for i, n in idx.items.iteritems() if name_re.match(n)])
+    return matches
+
+
+class ItemStats(model.Model):
+  user = model.UserProperty('u', required=True)
+  character_key = model.KeyProperty('ck', kind='Character', required=True)
+  char_id = model.StringProperty('cid', required=True)
+  type_id = model.StringProperty('iid', required=True)
+  accumulated_cost = model.FloatProperty('ac', default=0, indexed=False)
+  accumulated_earnings = model.FloatProperty('ae', default=0, indexed=False)
+  items_sold = model.IntegerProperty('is', default=0)
+  items_bought = model.IntegerProperty('ib', default=0)
+  roi_yield = model.FloatProperty('ry', default=0)
+  avg_roi_yield = model.FloatProperty('ary', default=0)

@@ -2,6 +2,8 @@
 queue:
 - name: transaction-sync
   rate: 5/s
+  retry_parameters:
+    task_retry_limit: 1
 
 - name: index-update
   rate: 1/s

@@ -15,3 +15,18 @@ indexes:
   - name: character_key
   - name: td
     direction: desc
+
+- kind: WalletTransaction
+  properties:
+  - name: character_key
+  - name: tt
+  - name: td
+    direction: desc
+
+- kind: WalletTransaction
+  properties:
+  - name: character_key
+  - name: tt
+  - name: tyi
+  - name: td
+    direction: desc
