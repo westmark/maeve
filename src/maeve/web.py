@@ -109,3 +109,23 @@ def profile_required(fn):
 
     return fn(self, *args, **kwargs)
   return wrapped
+
+
+def character_view(fn):
+  def wrapped(self, *args, **kwargs):
+    from maeve.models import Character
+    char_id = self.request.get('char')
+    if not char_id:
+      return self.redirect('/profile')
+
+    char = Character.by_char_id(char_id)
+    if not char:
+      self.session.add_flash('No character with that id found', key='top_messages')
+      return self.redirect('/profile')
+
+    if users.is_current_user_admin() or users.get_current_user() == char.user:
+      self.character = char
+      return fn(self, *args, **kwargs)
+    else:
+      return self.redirect('/profile')
+  return wrapped

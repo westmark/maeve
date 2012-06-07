@@ -18,7 +18,7 @@
       {% if active_chars %}
         {% for c in active_chars %}
           <li>
-            <a href="/character/{{ c.char_id }}">
+            <a href="/character?char={{ c.char_id }}">
               <i class="icon-user"></i>
               {{ c.name }}
           </a>
@@ -33,7 +33,7 @@
       {% if inactive_chars %}
         {% for c in inactive_chars %}
           <li>
-            <a href="/character/{{ c.char_id }}">
+            <a href="/character?char={{ c.char_id }}">
               <i class="icon-user"></i>
               {{ c.name }}
           </a>

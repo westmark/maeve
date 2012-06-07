@@ -1,0 +1,25 @@
+<h3>ROI</h3>
+
+<div class="roi-content">
+
+</div>
+
+<h3>Batch mean / median prices</h3>
+<form id="form-mean-price" class="form-inline" action="/stat/transactions/mean" method="GET">
+  <input name="quantity" type="text" class="input-small" placeholder="Batch max size" />
+  <select name="transactiontype" class="input-small">
+    <option value="{{ WalletTransaction.BUY }}">Buy</option>
+    <option value="{{ WalletTransaction.SELL }}">Sell</option>
+    <option value="0">Buy &amp; Sell</option>
+  </select>
+  <button type="submit" class="btn">Bananahammock!</button>
+
+  <div class="progress-container">
+    <div class="progress progress-striped active" style="display: none">
+      <div class="bar" style="width: 100%"></div>
+    </div>
+  </div>
+</form>
+<div class="mean-content">
+
+</div>

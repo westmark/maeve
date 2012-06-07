@@ -1,0 +1,4 @@
+cron:
+- description: 15 minute sync task
+  url: /_cron
+  schedule: every 15 minutes

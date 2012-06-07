@@ -3,7 +3,7 @@
 from maeve.web import BaseHandler
 from maeve.settings import webapp2_config
 from maeve.utils import is_prod_environment
-from maeve.tasks import index_all_characters, index_character, update_item_index
+from maeve.tasks import index_all_characters, index_character, update_index
 from maeve.models import Character, Account
 from google.appengine.ext.ndb import toplevel, model
 from google.appengine.api import taskqueue
@@ -30,10 +30,13 @@ class SyncTaskHandler(BaseHandler):
     character = model.Key(urlsafe=char_key).get()
     if character and character.active:
       account = character.account_key.get()
-      items = index_character(character, account)
+      items, stations = index_character(character, account)
       if items:
         taskqueue.add(url='/_task/index',
-                      params={'values': json.dumps(items)},
+                      params={
+                        'items': json.dumps(items),
+                        'stations': json.dumps(stations)
+                      },
                       queue_name='index-update')
 
 
@@ -45,8 +48,9 @@ class IndexTaskHandler(BaseHandler):
 
   @toplevel
   def post(self):
-    new_values = json.loads(self.request.get('values', '{}'))
-    update_item_index(new_values)
+    new_items = json.loads(self.request.get('items', '{}'))
+    new_stations = json.loads(self.request.get('stations', '{}'))
+    update_index(new_items, new_stations)
 
 
 app = webapp2.WSGIApplication([

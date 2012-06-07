@@ -23,20 +23,16 @@
 
 }
 
-.table-transactions > tbody > tr.type1 {
-  background-color:       #FFA8A8;
+.table-transactions > tbody > tr.type1 .currency {
+  color:                  red;
+  font-weight:            bold;
 }
 
-.table-transactions > tbody > tr.type2 {
-  background-color:       #B2FFBB;
+.table-transactions > tbody > tr.type2 .currency {
+  color:                  green;
+  font-weight:            bold;
 }
 
-.table-transactions > tbody > tr > td.currency {
+td.currency {
   text-align:             right;
-}
-
-.progress-container {
-  width:                  50%;
-  position:               relative;
-  left:                   25%;
 }

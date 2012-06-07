@@ -1,0 +1,56 @@
+{% extends 'character/base.html' %}
+
+{% block rightcontent %}
+  <div id="analysis-container">
+    <h2>Item analysis</h2>
+    <form id="form-analysis" class="form-inline" action="/stat/commodity/stats" method="GET">
+      <input name="commodityname" autocomplete="off" type="text" class="span5" placeholder="Commodity name" />
+      <button type="submit" class="btn">Go nuts!</button>
+    </form>
+    <div class="progress-container">
+      <div class="progress progress-striped active" style="display: none">
+        <div class="bar" style="width: 100%"></div>
+      </div>
+    </div>
+
+    <div class="content">
+
+    </div>
+
+  </div>
+{% endblock %}
+
+{% block subendbody %}
+<script type="text/javascript" src="/static/js/lib/bootstrap-typeahead.js"></script>
+<script type="text/javascript">
+  mv.character.initAnalysis();
+</script>
+{% endblock %}
+
+{% block templates %}
+  {% raw %}
+
+  mv.templates.itemPriceAnalysisTable = ' \
+      <table class="table table-itemanalysis table-bordered table-condensed"> \
+      <thead> \
+        <tr> \
+          <th colspan="2">{{ itemName }} - {{ transactionTypeName }} orders</th> \
+ \        </tr> \
+      </thead> \
+      <tbody> \
+      <tr> \
+        <th>Transactions found</th> \
+        <td>{{ nrOfTransactions }}</td> \
+      </tr> \
+      <tr> \
+        <th>Mean unit price</th> \
+        <td class="currency">{{ mean }}</td> \
+      </tr> \
+      <tr> \
+        <th>Median unit price</th> \
+        <td class="currency">{{ median }}</td> \
+      </tr> \
+      </tbody> \
+      </table>';
+  {% endraw %}
+{% endblock %}

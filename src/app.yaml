@@ -21,6 +21,12 @@ handlers:
   static_dir: static
   secure: always
 
+#Admin
+- url: /admin/.*
+  script: maeve.admin.app
+  login: admin
+  secure: always
+
 #Profile
 - url: /profile.*
   script: maeve.profile_view.app

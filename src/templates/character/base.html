@@ -24,7 +24,7 @@
       <p>
         This character is not active. Activate it now?
       </p>
-      <form action="/character/{{ character.char_id }}/activate" method="POST">
+      <form action="/character/activate?char={{ character.char_id }}" method="POST">
         <button type="submit" class="btn btn-primary">Yes, activate now!</button>
       </form>
     </div>
@@ -40,8 +40,9 @@
       {% macro nav(name, url, icon, active) %}
       <li{% if active %} class="active"{% endif %}><a href="{{ url }}"><i class="{{ icon }}"></i>{{ name }}</a></li>
       {% endmacro %}
-      {{ nav('Dashboard', '/character/' + character.char_id, 'icon-home', current == 'dashboard')}}
-      {{ nav('Transactions', '/character/' + character.char_id + '/transactions', 'icon-book', current == 'transactions')}}
+      {{ nav('Dashboard', '/character?char=' + character.char_id, 'icon-home', current == 'dashboard')}}
+      {{ nav('Transactions', '/character/transactions?char=' + character.char_id, 'icon-book', current == 'transactions')}}
+      {{ nav('Item analysis', '/character/analysis?char=' + character.char_id, 'icon-eye-open', current == 'analysis')}}
     </ul>
   </div>
   <div id="transactions" class="span10">

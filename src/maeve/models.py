@@ -97,8 +97,8 @@ class WalletTransaction(model.Model):
   transaction_id = model.IntegerProperty('ti', required=True)
   transaction_date = model.DateTimeProperty('td', required=True)
   quantity = model.IntegerProperty('q', required=True, indexed=False)
-  type_name = model.StringProperty('tn', required=True, indexed=False)
   type_id = model.StringProperty('tyi', required=True)
+  station_id = model.StringProperty('si', required=True)
   unit_price = model.FloatProperty('up', required=True, indexed=False)
   client_id = model.StringProperty('cli', required=True, indexed=False)
   client_name = model.StringProperty('cln', required=True, indexed=False)
@@ -137,17 +137,17 @@ class ItemTypeIndex(model.Model):
 
   items = model.JsonProperty(default={})
 
-  @classmethod
-  def get(cls, item_id):
-    idx = ItemTypeIndex.query().get()
-    return (idx.items or {}).get(item_id, None)
-
   def find(cls, name_part):
     import re
     name_re = re.compile('^.*?{0}.*$'.format(name_part.lower()), flags=re.IGNORECASE)
     idx = ItemTypeIndex.query().get()
     matches = ([(i, n) for i, n in idx.items.iteritems() if name_re.match(n)])
     return matches
+
+
+class StationIndex(model.Model):
+
+  stations = model.JsonProperty(default={})
 
 
 class ItemStats(model.Model):
